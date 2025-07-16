@@ -1,303 +1,125 @@
 <script setup>
-import BaseGrid from './components/BaseGrid.vue' // 경로는 실제 위치에 맞게
-import { ref } from 'vue'
+import BaseGrid from "./components/BaseGrid.vue"; // 경로는 실제 위치에 맞게
+import { ref } from "vue";
+import { gridHdrMpng } from "./utils.js";
+import { rowData } from "./data.js";
+
+const rowDatas = ref(rowData);
+
+// Value Customize
+const valueNumFormatter = (val) => {
+  //
+  return "$" + val.value;
+};
+const modelList = [
+  { value: "1", label: "Celica" },
+  { value: "2", label: "Boxster" },
+  { value: "3", label: "Sonata" },
+];
+
+// Select label Value 설정을 위해서 필요
+// 추후 Enter버전이 들어오면 변경될 수 있음
+const selectFormatter = ({ value }) => {
+  const matched = modelList.find((item) => item.value === value);
+  return matched ? matched.label : value;
+};
+
+// Select label Value 설정을 위해서 필요
+// 추후 Enter버전이 들어오면 변경될 수 있음
+const selectParser = ({ newValue }) => {
+  const matched = modelList.find((item) => item.label === newValue);
+  return matched ? matched.value : newValue;
+};
 
 // 컬럼 예시
 const columnDefs = [
-  {
+  // Checkbox 생성해주는것 index 선택용
+  gridHdrMpng("", "", "checkbox", "", {
     filter: false,
     sortable: false,
     checkboxSelection: true,
     headerCheckboxSelection: true,
-    width: 50
-  },
-  {
-    field: 'make',
-    headerName: 'Make',
-    spanRows: ({ nodeA, nodeB, dataA, dataB }) =>
-      nodeA.data.keyData !== undefined &&
-      nodeB.data.keyData !== undefined &&
-      nodeA.data.keyData === nodeB.data.keyData &&
-      dataA === dataB,
-    pinned: 'left'
-  },
-  { field: 'model', headerName: 'Model', editable: true },
-  { field: 'price', headerName: 'Price', 
-        pinned: 'left' },
+    width: 50,
+    fixed: true,
+  }),
 
+  // Merge 예시 (Input)
+
+  gridHdrMpng("make", "Make", "", "", { fixed: true }),
+  // Selectbox 예시
+  gridHdrMpng("model", "Model", "selectbox", "", {
+    merge: true,
+    spanKey: "keyData",
+    edit: true,
+    list: modelList,
+    valueFormatter: selectFormatter,
+    valueParser: selectParser,
+  }),
+  // Input 예시
+  gridHdrMpng("price", "Price", "number", "", {
+    // fixed: true,
+    edit: true,
+    valueFormatter: valueNumFormatter,
+  }),
   // 3단 헤더 예시
-  {
-    headerName: "제품정보",
-    children: [
-      {
-        headerName: "상세",
-        children: [
-          { field: "category", headerName: "카테고리" },
-          {
-            headerName: "브랜드/코드",
-            children: [
-              { field: "brand", headerName: "브랜드" , editable: true, cellEditor: 'agSelectCellEditor',  // 에디터 타입 지정
-    cellEditorParams: {
-      values: ['Toyota', 'Hyundai']
-    }},
-              { field: "prodCode", headerName: "상품코드" }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-
-  {
-    headerName: "Athlete Details",
-    children: [
-      {
-        field: "athlete",
-        width: 150,
-        suppressSizeToFit: true,
-        enableRowGroup: true,
-        rowGroupIndex: 0,
-      },
-      {
-        field: "age",
-        width: 90,
-        minWidth: 75,
-        maxWidth: 100,
-        enableRowGroup: true,
-      },
-      {
-        field: "country",
-        enableRowGroup: true,
-      },
-      {
-        field: "year",
-        width: 90,
-        enableRowGroup: true,
-        pivotIndex: 0,
-      },
-      { field: "sport", width: 110, enableRowGroup: true },
-      {
-        field: "gold",
-        enableValue: true,
-        suppressHeaderMenuButton: true,
-        filter: "agNumberColumnFilter",
-        aggFunc: "sum",
-      },
-      {
-        field: "silver",
-        enableValue: true,
-        suppressHeaderMenuButton: true,
-        filter: "agNumberColumnFilter",
-        aggFunc: "sum",
-      },
-      {
-        field: "bronze",
-        enableValue: true,
-        suppressHeaderMenuButton: true,
-        filter: "agNumberColumnFilter",
-        aggFunc: "sum",
-      },
-      {
-        field: "total",
-        enableValue: true,
-        suppressHeaderMenuButton: true,
-        filter: "agNumberColumnFilter",
-        aggFunc: "sum",
-      },
-    ],
-  },
-];
-
-// 데이터 예시
-const rowData = [
-  {
-    make: "Toyota",
-    keyData: 'sss',
-    model: "Celica",
-    price: 35000,
-    category: "승용차",
-    brand: "Toyota",
-    prodCode: "T-CEL-01",
-    athlete: "Michael Phelps",
-    age: 23,
-    country: "USA",
-    year: 2008,
-    sport: "Swimming",
-    gold: 8,
-    silver: 0,
-    bronze: 0,
-    total: 8
-  },
-  {
-    make: "Toyota",
-    keyData: 'sss',
-    model: "Celica",
-    price: 40000,
-    category: "승용차",
-    brand: "Toyota",
-    prodCode: "T-CEL-01",
-    athlete: "Michael Phelps",
-    age: 23,
-    country: "USA",
-    year: 2008,
-    sport: "Swimming",
-    gold: 8,
-    silver: 0,
-    bronze: 0,
-    total: 8
-  },
-  {
-    make: "Toyota",
-    keyData: 'ss',
-    model: "Celica",
-    price: 40000,
-    category: "SUV",
-    brand: "Toyota",
-    prodCode: "T-CEL-02",
-    athlete: "Michael Phelps",
-    age: 23,
-    country: "USA",
-    year: 2008,
-    sport: "Swimming",
-    gold: 8,
-    silver: 0,
-    bronze: 0,
-    total: 8
-  },
-  {
-    make: "Toyota",
-    keyData: 'sss',
-    model: "Celica",
-    price: 40000,
-    category: "승용차",
-    brand: "Toyota",
-    prodCode: "T-CEL-01",
-    athlete: "Michael Phelps",
-    age: 23,
-    country: "USA",
-    year: 2008,
-    sport: "Swimming",
-    gold: 8,
-    silver: 0,
-    bronze: 0,
-    total: 8
-  },
-  {
-    make: "Toyota",
-    keyData: 'sss',
-    model: "Celica",
-    price: 40000,
-    category: "승용차",
-    brand: "Toyota",
-    prodCode: "T-CEL-01",
-    athlete: "Michael Phelps",
-    age: 23,
-    country: "USA",
-    year: 2008,
-    sport: "Swimming",
-    gold: 8,
-    silver: 0,
-    bronze: 0,
-    total: 8
-  },
-  {
-    make: "Ford",
-    model: "Mondeo",
-    price: 32000,
-    category: "SUV",
-    brand: "Ford",
-    prodCode: "F-MON-01",
-    athlete: "Usain Bolt",
-    age: 22,
-    country: "Jamaica",
-    year: 2008,
-    sport: "Athletics",
-    gold: 3,
-    silver: 0,
-    bronze: 0,
-    total: 3
-  },
-  {
-    make: "Porsche",
-    model: "Boxster",
-    price: 72000,
-    category: "스포츠카",
-    brand: "Porsche",
-    prodCode: "P-BOX-01",
-    athlete: "Kosuke Kitajima",
-    age: 25,
-    country: "Japan",
-    year: 2008,
-    sport: "Swimming",
-    gold: 2,
-    silver: 0,
-    bronze: 0,
-    total: 2
-  },
-  {
-    make: "Hyundai",
-    model: "Sonata",
-    price: 25000,
-    category: "승용차",
-    brand: "Hyundai",
-    prodCode: "H-SON-01",
-    athlete: "Natalie Coughlin",
-    age: 25,
-    country: "USA",
-    year: 2008,
-    sport: "Swimming",
-    gold: 1,
-    silver: 2,
-    bronze: 3,
-    total: 6
-  },
-  {
-    make: "Kia",
-    model: "K5",
-    price: 23000,
-    category: "승용차",
-    brand: "Kia",
-    prodCode: "K-K5-01",
-    athlete: "Leisel Jones",
-    age: 22,
-    country: "Australia",
-    year: 2008,
-    sport: "Swimming",
-    gold: 1,
-    silver: 2,
-    bronze: 0,
-    total: 3
-  },
-  {
-    make: "Honda",
-    model: "Civic",
-    price: 21000,
-    category: "승용차",
-    brand: "Honda",
-    prodCode: "H-CIV-01",
-    athlete: "Ryan Lochte",
-    age: 24,
-    country: "USA",
-    year: 2008,
-    sport: "Swimming",
-    gold: 2,
-    silver: 0,
-    bronze: 2,
-    total: 4
-  }
-  // ... 이하 동일 패턴
+  gridHdrMpng("", "제품정보", "", [
+    gridHdrMpng("", "상세", "", [
+      gridHdrMpng("category", "카테고리"),
+      gridHdrMpng("", "브랜드/코드", "", [
+        gridHdrMpng("brand", "브랜드", "selectbox", "", {
+          edit: true,
+          list: ["Toyota", "Hyundai"],
+        }),
+        gridHdrMpng("prodCode", "상품코드"),
+      ]),
+    ]),
+  ]),
+  // 2차 depth
+  gridHdrMpng("", "Athlete Details", "", [
+    gridHdrMpng("year", "year", "year", "", { edit: true }),
+    gridHdrMpng("month", "month", "month", "", { edit: true }),
+    gridHdrMpng("day", "day", "day", "", { edit: true }),
+    gridHdrMpng("date", "date", "date", "", { edit: true }),
+    gridHdrMpng("datetime", "datetime", "datetime", "", { edit: true }),
+    gridHdrMpng("athlete", "athlete", "", [], { visible: false }),
+    gridHdrMpng("age", "age", "shaded"),
+    gridHdrMpng("country", "country"),
+    gridHdrMpng("sport", "sport"),
+    gridHdrMpng("gold", "gold"),
+    gridHdrMpng("silver", "silver"),
+    gridHdrMpng("bronze", "bronze"),
+    gridHdrMpng("total", "total"),
+  ]),
 ];
 
 // mergeKeys, mergeTextFields 등은 필요하면 전달
+const columnTypes = ref({
+  shaded: {
+    cellClass: "shaded-class",
+  },
+});
 </script>
 
 <template>
   <BaseGrid
     headerFilterId="demo"
     :header="columnDefs"
-    :data="rowData"
+    :data="rowDatas"
     :singleSelect="false"
-    @selection-change="rows => console.log('선택 변경:', rows)"
+    :rowNumbers="true"
+    :columnTypes="columnTypes"
+    @cell-input-change="
+      (row, col, val) => console.log('선택 변경:', row, col, val)
+    "
+    @cell-select-change="
+      (row, col, val) => console.log('select-change:', row, col, val)
+    "
+    @selection-change="
+      (row, col, v) => console.log('selectbox Change', row, col, v)
+    "
     @cell-click="(...args) => console.log('셀 클릭:', ...args)"
+    @cell-date-picker-change="
+      (row, col, val) => console.log('cell-date-picker-change:', row, col, val)
+    "
   />
 </template>

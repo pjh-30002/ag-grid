@@ -1,8 +1,15 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import App from './App.vue'
+import { createApp } from "vue";
+import { createPinia } from "pinia";
+import App from "./App.vue";
 
-import { AllCommunityModule, ModuleRegistry,provideGlobalGridOptions, themeQuartz } from 'ag-grid-community'; 
+// import "ag-grid-community/styles/ag-grid.css";
+// import "ag-grid-community/styles/ag-theme-alpine.css";
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  provideGlobalGridOptions,
+  themeQuartz,
+} from "ag-grid-community";
 
 // Mark all grids as using legacy themes
 // themeQuartz + 커스텀
@@ -28,13 +35,13 @@ const myTheme = themeQuartz.withParams({
   sidePanelBorder: true,
   spacing: 4,
   wrapperBorder: false,
-  wrapperBorderRadius: 2
-})
+  wrapperBorderRadius: 2,
+});
 
 provideGlobalGridOptions({ theme: myTheme });
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
-const app = createApp(App)
-const pinia = createPinia()
-app.use(pinia)          // ← 이게 반드시 있어야 함!
-app.mount('#app')
+const app = createApp(App);
+const pinia = createPinia();
+app.use(pinia); // ← 이게 반드시 있어야 함!
+app.mount("#app");
