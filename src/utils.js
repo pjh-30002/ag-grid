@@ -1,6 +1,7 @@
 ///// utils.js
 // import * as XLSX from 'xlsx-js-style';
 import dayjs from "dayjs";
+import GridButton from "./components/GridButton.vue";
 
 const commonFont = { name: "Arial", size: 10, bold: false };
 const headerFont = { name: "Arial", size: 10, bold: true };
@@ -769,6 +770,9 @@ const gridHrdDefaultOptions = {
   falseValue: false,
   rowNum: 1,
   inputType: "text",
+  text: "",
+  leftText: "",
+  rightText: "",
   color: "",
   cellEditor: null,
   spanKey: null,
@@ -859,15 +863,15 @@ export const gridHdrMpng = (
       ? "agDateCellEditor"
       : "agTextCellEditor";
 
+  // Cell Renderer Customize
+  // AG-Grid에서 제공하지 않는 부분은 따로 개발해야함 컴포넌트 화 필요
   const selectValueList = config.list
     ? config.list.map((item) => item.value)
     : [];
   const columnOptions = {
     field: type === "checkbox" ? "" : key,
     headerName: label,
-    filter: datePickerType.includes(type)
-      ? "agDateColumnFilter"
-      : config.filterable,
+    filter: datePickerType.includes(type) ? "agDateColumnFilter" : true,
     cellDataType: datePickerType.includes(type) ? cellDataType : null,
     sortable: config.sortable,
     checkboxSelection: type === "checkbox",
@@ -880,6 +884,9 @@ export const gridHdrMpng = (
       includeTime: type === "datetime" ? true : false,
     },
     hide: !config.visible,
+    text: config.text,
+    rightText: config.rightText,
+    leftText: config.leftText,
     // cellEditorParams:
     //   type === "selectbox"
     //     ? {
@@ -914,9 +921,15 @@ export const gridHdrMpng = (
     // color: config.color,
   };
   if (!datePickerType.includes(type)) {
-    console.log(type);
     // Date Type의 경우 따로 Grid에서 옵션을 주고있어서 컬럼에서 Formatter가 들어가면 안됨
     columnOptions.valueFormatter = config.valueFormatter;
+  }
+  if (type === "button") {
+    columnOptions.cellRenderer = GridButton;
+    columnOptions.cellRendererParams = (params) => ({
+      ...params,
+      key: params.data.id + (params.data.btn?.text || ""),
+    });
   }
 
   return columnOptions;

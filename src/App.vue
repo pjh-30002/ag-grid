@@ -74,6 +74,10 @@ const columnDefs = [
       ]),
     ]),
   ]),
+  gridHdrMpng("buttonText", "버튼", "button", "", {
+    text: "버튼Label",
+    rightText: "우측글씨",
+  }),
   // 2차 depth
   gridHdrMpng("", "Athlete Details", "", [
     gridHdrMpng("year", "year", "year", "", { edit: true }),
@@ -120,6 +124,9 @@ const columnTypes = ref({
     @cell-click="(...args) => console.log('셀 클릭:', ...args)"
     @cell-date-picker-change="
       (row, col, val) => console.log('cell-date-picker-change:', row, col, val)
+    "
+    @cell-btn-click="
+      (row, col, val) => console.log('cell-btn-click', row, col, v)
     "
   />
 </template>

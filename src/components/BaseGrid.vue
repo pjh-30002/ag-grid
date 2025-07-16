@@ -2,6 +2,11 @@
 import { AgGridVue } from "ag-grid-vue3";
 import { onMounted, ref } from "vue";
 import dayjs from "dayjs";
+import GridButton from "./GridButton.vue";
+import { getCurrentInstance } from "vue";
+
+const internalInstance = getCurrentInstance();
+const vueThis = internalInstance?.proxy;
 
 const props = defineProps({
   data: { type: Object }, // 부모에서 받은 데이터
@@ -18,6 +23,8 @@ const props = defineProps({
   columnTypes: { type: Object, default: [] }, // Column Type 설정
 });
 
+const gridApi = ref(null);
+const gridData = ref([]);
 const emit = defineEmits([
   // Cell 이벤트
   "cell-click",
@@ -89,6 +96,9 @@ const eventHandlers = {
     emit("header-click", event.column, event.event),
   // onCellMouseOver: (event) => emit("cell-mouse-enter", event.data, event.colDef, event.event),
   // onCellMouseOut: (event) => emit("cell-mouse-leave", event.data, event.colDef, event.event),
+  onCellBtnClick: (event) => {
+    emit("cell-btn-click", event.data, event.colDef, event.newValue);
+  },
   onCellValueChanged: (event) => {
     console.log(event.colDef);
     if (datePickerType.includes(event.colDef.cellDataType)) {
@@ -169,6 +179,7 @@ const gridOptions = ref({
   columnTypes: props.columnTypes,
   enableCellSpan: true, // Merge옵션
   animateRows: true,
+  // 날짜 정의
   dataTypeDefinitions: {
     // 🟢 일반 날짜
     dateString: {
@@ -388,41 +399,44 @@ const gridOptions = ref({
         return date ? dayjs(date).format("MM") : "";
       },
     },
+    // 🟥 일만
+    dayOnly: {
+      baseDataType: "dateString",
+      extendsDataType: "dateString",
+
+      valueParser: (params) => {
+        if (params.newValue instanceof Date) {
+          return dayjs(params.newValue).format("DD");
+        }
+        if (
+          typeof params.newValue === "string" &&
+          /^\d{1,2}$/.test(params.newValue)
+        ) {
+          return pad(Number(params.newValue));
+        }
+        return null;
+      },
+
+      valueFormatter: (params) => {
+        if (!params.value) return "";
+        const n = Number(params.value);
+        return !isNaN(n) && n >= 1 && n <= 31 ? pad(n) : "";
+      },
+
+      dateParser: (value) => {
+        if (!value || !/^\d{1,2}$/.test(value)) return undefined;
+        return dayjs(`1990-01-${pad(Number(value))}`).toDate();
+      },
+
+      dateFormatter: (date) => {
+        return date ? dayjs(date).format("DD") : "";
+      },
+    },
+  },
+  context: {
+    vue: vueThis, // 부모 컴포넌트의 this 넘기기 (이벤트 연동 시)
   },
 
-  // 🟥 일만
-  dayOnly: {
-    baseDataType: "dateString",
-    extendsDataType: "dateString",
-
-    valueParser: (params) => {
-      if (params.newValue instanceof Date) {
-        return dayjs(params.newValue).format("DD");
-      }
-      if (
-        typeof params.newValue === "string" &&
-        /^\d{1,2}$/.test(params.newValue)
-      ) {
-        return pad(Number(params.newValue));
-      }
-      return null;
-    },
-
-    valueFormatter: (params) => {
-      if (!params.value) return "";
-      const n = Number(params.value);
-      return !isNaN(n) && n >= 1 && n <= 31 ? pad(n) : "";
-    },
-
-    dateParser: (value) => {
-      if (!value || !/^\d{1,2}$/.test(value)) return undefined;
-      return dayjs(`1990-01-${pad(Number(value))}`).toDate();
-    },
-
-    dateFormatter: (date) => {
-      return date ? dayjs(date).format("DD") : "";
-    },
-  },
   // statusBar: {
   //   statusPanels: [
   //     { statusPanel: 'agTotalRowCountComponent', align: 'left' },
@@ -432,6 +446,11 @@ const gridOptions = ref({
   // rowGroupPanelShow: 'always',
   // pivotPanelShow: 'always',
 });
+
+function onGridReady(params) {
+  gridApi.value = params.api;
+  gridData.value = props.data;
+}
 </script>
 
 <template>
@@ -439,7 +458,7 @@ const gridOptions = ref({
     style="width: 100%; height: 600px"
     class="ag-theme-alpine"
     :columnDefs="header"
-    :rowData="data"
+    :rowData="gridData"
     :columnTypes="columnTypes"
     v-bind="gridOptions"
     :onCellClicked="eventHandlers.onCellClicked"
@@ -455,6 +474,7 @@ const gridOptions = ref({
     :onCellEditingStarted="eventHandlers.onCellEditingStarted"
     :onCellEditingStopped="eventHandlers.onCellEditingStopped"
     :onSelectionChanged="eventHandlers.onSelectionChanged"
+    @grid-ready="onGridReady"
   />
 </template>
 
